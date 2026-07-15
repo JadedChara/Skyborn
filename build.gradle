@@ -12,6 +12,44 @@ repositories {
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
+	exclusiveContent { // Sable
+		forRepository {
+			maven {
+				url = "https://maven.ryanhcode.dev/releases"
+				name = "RyanHCode Maven"
+			}
+		}
+		filter {
+			includeGroup("dev.ryanhcode.sable")
+			includeGroup("dev.ryanhcode.sable-companion")
+		}
+	}
+	maven {
+		name = 'GeckoLib'
+		url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+		content {
+			includeGroup("software.bernie.geckolib")
+		}
+	}
+	maven {
+		name = "Ladysnake Mods"
+		url = 'https://maven.ladysnake.org/releases'
+
+	}
+	maven {
+		url = "https://api.modrinth.com/maven"
+	}
+	maven {
+		name = 'BlameJared Maven (CrT / Bookshelf)'
+		url = 'https://maven.blamejared.com'
+	}
+	maven {
+		url = "https://maven.shedaniel.me/"
+	}
+	maven {
+		name = "Fuzs Mod Resources"
+		url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+	}
 }
 
 dependencies {
@@ -22,7 +60,35 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	
+
+
+	//Backending
+	modImplementation "software.bernie.geckolib:geckolib-fabric-$minecraft_version:$geckolib_version"
+	modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-base:$cca_version"
+	modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-block:$cca_version"
+	modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-entity:$cca_version"
+	modImplementation "org.ladysnake.cardinal-components-api:cardinal-components-world:$cca_version"
+	modImplementation "org.ladysnake:satin:$satin_version"
+	modImplementation("foundry.veil:veil-fabric-$minecraft_version:$veil_version") {
+		exclude group: "maven.modrinth"
+		exclude group: "me.fallenbreath"
+	}
+	modImplementation("maven.modrinth:item-tooltips:$minecraft_version-v$tooltips_version-fabric")
+	modApi("me.shedaniel.cloth:cloth-config-fabric:$cloth_version") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
+
+	//Sable
+	modApi("dev.ryanhcode.sable:sable-fabric-${project.minecraft_version}:${project.sable_version}")
+
+
+	//Bundled
+	include "org.ladysnake:satin:$satin_version"
+	include "org.ladysnake.cardinal-components-api:cardinal-components-base:$cca_version"
+	include "org.ladysnake.cardinal-components-api:cardinal-components-block:$cca_version"
+	include "org.ladysnake.cardinal-components-api:cardinal-components-entity:$cca_version"
+	include "org.ladysnake.cardinal-components-api:cardinal-components-world:$cca_version"
+
 }
 
 processResources {

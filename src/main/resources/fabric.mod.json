@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
 			"io.github.jadedchara.Skyborn"
+		],
+		"client": [
+			"io.github.jadedchara.client.SkybornClient"
 		]
 	},
 	"mixins": [
