@@ -53,7 +53,7 @@ public class AltitudeControlBlockEntity extends BlockEntity implements MenuProvi
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
-        return new AltitudeScreenHandler(i,inventory,this);
+        return new AltitudeScreenHandler(i,inventory,this,this.getAltitude());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.github.jadedchara.client.screen;
 
 import io.github.jadedchara.Skyborn;
+import io.github.jadedchara.common.block.entity.AltitudeControlBlockEntity;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,13 +12,20 @@ import net.minecraft.world.item.ItemStack;
 
 public class AltitudeScreenHandler extends AbstractContainerMenu {
     private final Container inventory;
+    private AltitudeControlBlockEntity block;
+    private float altitude = 90.0F;
     public AltitudeScreenHandler(int syncId, Inventory playerInventory) {
-        this(syncId, playerInventory, new SimpleContainer(1));
+        this(syncId, playerInventory, new SimpleContainer(1),90.0F);
     }
-    public AltitudeScreenHandler(int syncId, Inventory pl, Container inventory) {
+    public AltitudeScreenHandler(int syncId, Inventory pl, Container inventory,float alt) {
         super(Skyborn.ALTITUDE_SCREEN_HANDLER, syncId);
         checkContainerSize(inventory, 1);
+        this.altitude = alt;
         this.inventory = inventory;
+        if(inventory instanceof AltitudeControlBlockEntity){
+            this.block = (AltitudeControlBlockEntity) inventory;
+            this.altitude = this.block.getAltitude();
+        }
         inventory.startOpen(pl.player);
         int m;
         int l;
@@ -59,6 +67,6 @@ public class AltitudeScreenHandler extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return false;
+        return this.inventory.stillValid(player);
     }
 }
