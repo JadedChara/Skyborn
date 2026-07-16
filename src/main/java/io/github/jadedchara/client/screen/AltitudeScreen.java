@@ -2,6 +2,7 @@ package io.github.jadedchara.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -14,6 +15,7 @@ public class AltitudeScreen extends AbstractContainerScreen<AltitudeScreenHandle
     private static final ResourceLocation TEXTURE = ResourceLocation.parse("textures/gui/container/dispenser.png");
 
     public MultiLineEditBox floatInput;
+    public Button sendInput;
     private AltitudeScreenHandler handler;
 
     public AltitudeScreen(AltitudeScreenHandler a, Inventory i, Component c) {
@@ -45,5 +47,25 @@ public class AltitudeScreen extends AbstractContainerScreen<AltitudeScreenHandle
                 16,Component.literal(""),
                 Component.translatable("skyborn.prompt.altitude.input")
         );
+        floatInput.setCharacterLimit(5);
+        floatInput.setValueListener((var)->{
+            try{
+                Float.parseFloat(var);
+            }catch(Exception e){
+                floatInput.setValue("");
+            }
+        });
+        sendInput = Button
+                .builder(
+                        Component.literal("Set Altitude"),
+                        button->{
+                                    try{
+                                        this.handler.setAltitude(Float.parseFloat(floatInput.getValue()));
+                                    }catch(Exception e){
+                                        floatInput.setValue("");
+                                    }
+                                }
+                        )
+                .pos(this.width/2,this.height/2-16).build();
     }
 }

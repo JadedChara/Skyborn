@@ -27,7 +27,7 @@ public class FuelAccessHandler extends AbstractContainerMenu {
         // Our inventory
         for (m = 0; m < 2; ++m) {
             for (l = 0; l < 9; ++l) {
-                this.addSlot(new Slot(inventory, l + m * 3, 8 + l * 18, 17 + m * 18));
+                this.addSlot(new Slot(inventory, l + m * 9, 8 + l * 18, 17 + m * 18));
             }
         }
         // The player inventory

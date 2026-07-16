@@ -69,4 +69,14 @@ public class AltitudeScreenHandler extends AbstractContainerMenu {
     public boolean stillValid(Player player) {
         return this.inventory.stillValid(player);
     }
+
+
+    public void setAltitude(float alt) {
+        try{
+            ((AltitudeControlBlockEntity)this.inventory).setAltitude(alt);
+            this.altitude = ((AltitudeControlBlockEntity)this.inventory).getAltitude();
+        }catch(Exception e){
+           System.out.println("Unable to set block altitude");
+        }
+    }
 }

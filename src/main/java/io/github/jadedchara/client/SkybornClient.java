@@ -1,6 +1,7 @@
 package io.github.jadedchara.client;
 
 import io.github.jadedchara.Skyborn;
+import io.github.jadedchara.client.screen.AltitudeScreen;
 import io.github.jadedchara.client.screen.FuelAccessScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -12,6 +13,7 @@ public class SkybornClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         MenuScreens.register(Skyborn.FUEL_ACCESS_HANDLER, FuelAccessScreen::new);
+        MenuScreens.register(Skyborn.ALTITUDE_SCREEN_HANDLER, AltitudeScreen::new);
     }
 }
 
