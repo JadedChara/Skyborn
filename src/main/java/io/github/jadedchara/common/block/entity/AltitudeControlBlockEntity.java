@@ -27,10 +27,10 @@ public class AltitudeControlBlockEntity extends BlockEntity implements MenuProvi
         super(SkybornBlocks.ALTITUDE_CONTROL_BLOCKENTITY, blockPos, blockState);
     }
     public float getAltitude(){
-        return altitude;
+        return this.altitude;
     };
     public void setAltitude(float a) {
-        altitude = a;
+        this.altitude = a;
     };
 
     @Override

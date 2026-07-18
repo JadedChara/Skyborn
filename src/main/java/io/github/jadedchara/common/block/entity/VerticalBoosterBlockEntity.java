@@ -9,7 +9,6 @@ import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import io.github.jadedchara.client.screen.FuelAccessHandler;
 import io.github.jadedchara.common.registry.SkybornBlocks;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -21,6 +20,7 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -32,8 +32,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.stream.IntStream;
 
 public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEntitySubLevelActor, Container,
-        MenuProvider, WorldlyContainer {
-    private final NonNullList<ItemStack> inventory = NonNullList.withSize(18, ItemStack.EMPTY);
+        MenuProvider {
+    public NonNullList<ItemStack> VBEinventory = NonNullList.withSize(18, ItemStack.EMPTY);
 
     public float thrust = 0.0F;
     public float counter = 0.0F; // = 1200F;
@@ -45,11 +45,10 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
 
 
 
-    public boolean isActive() {
+    public boolean isPowered() {
         return (
-                (getRedstonePower()) &&
-                (this
-                        .getLevel()
+                (this.getRedstonePower())/* &&
+                (level
                         .getBlockEntity(
                                 this.getBlockPos().above()
                         ) instanceof AltitudeControlBlockEntity
@@ -58,7 +57,7 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
                         this.getInventory().contains(Items.CHARCOAL) ||
                         this.getInventory().contains(Items.COAL_BLOCK) ||
                         this.getInventory().contains(Items.LAVA_BUCKET)
-                )
+                )*/
         );
     }
 
@@ -67,44 +66,58 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
     }
 
     private float getTargetAltitude(){
-        if(this.getLevel().getBlockEntity(this.getBlockPos().above()) instanceof AltitudeControlBlockEntity acbe){
+        if(level.getBlockEntity(this.getBlockPos().above()) instanceof AltitudeControlBlockEntity acbe){
             return acbe.getAltitude();
+            //return targetAltitude;
         }else{
             return targetAltitude;
         }
     }
 
     public static void tick(Level l, BlockPos bp, BlockState bs, VerticalBoosterBlockEntity e){
-        if(!e.isActive()){
-            e.counter = 0.0F;
+        if(!e.isPowered()){
+            //e.counter = 0.0F;
         }else{
-            if(e.getInventory().contains(Items.NETHER_STAR)){
-                //MAGIC
-            }else if((e.counter % 194400F == 0.0F) && e.getInventory().contains(Items.LAVA_BUCKET)){
-                //LA LA LA LAVA! CH CH CH CHICKEN!
-                e.getInventory().remove(Items.LAVA_BUCKET);
-                e.getInventory().add(Items.BUCKET.getDefaultInstance());
-            }else if((e.counter % 21600F == 0.0F) && e.getInventory().contains(Items.COAL_BLOCK)){
-                //Coal Block, ninth of Lava Bucket
-                e.getInventory().remove(Items.COAL_BLOCK);
-            }else if((e.counter % 2400F == 0.0F) && e.getInventory().contains(Items.COAL)){
-                //Coal, ninth of Coal Block
-                e.getInventory().remove(Items.COAL);
-            }else if((e.counter % 2000F == 0.0F) && e.getInventory().contains(Items.CHARCOAL)){
-                //Charcoal, little more than half as good as Coal
-                e.getInventory().remove(Items.CHARCOAL);
+            for(int i = 0;i < 18; i++) {
+                ItemStack is = e.getItem(i);
+                if (is.getItem().equals(Items.NETHER_STAR)) {
+                    //MAGIC
+                    return;
+                } else if ((e.counter % 194400F == 0.0F) && is.getItem().equals(Items.LAVA_BUCKET)) {
+                    //LA LA LA LAVA! CH CH CH CHICKEN!
+                    e.getInventory().set(i,Items.BUCKET.getDefaultInstance());
+                    return;
+                } else if ((e.counter % 21600F == 0.0F) && is.getItem().equals(Items.COAL_BLOCK)) {
+                    //Coal Block, ninth of Lava Bucket
+                    is.shrink(1);
+                } else if ((e.counter % 2400F == 0.0F) && is.getItem().equals(Items.COAL)) {
+                    //Coal, ninth of Coal Block
+                    is.shrink(1);
+                    return;
+                } else if ((e.counter % 2000F == 0.0F) && is.getItem().equals(Items.CHARCOAL)) {
+                    //Charcoal, little more than half as good as Coal
+                    is.shrink(1);
+                    return;
+                }
             }
             if(e.counter<12000F){
                 e.counter++;
             }else {
                 e.counter = 0.0F;
             }
+
         }
     }
 
     @Override
     public void sable$physicsTick(ServerSubLevel subLevel, RigidBodyHandle handle, double timeStep) {
-        if(!this.isActive()){
+        if(
+                !this.isPowered() ||
+                        !this.getDestackedInventory().contains(Items.COAL) ||
+                        !(this.getLevel().getBlockEntity(this.getBlockPos().above()) instanceof AltitudeControlBlockEntity)
+
+        ){
+            //System.out.println(this.getInventory());
             return;
         }
         Vec3 truePosition = Sable.HELPER.projectOutOfSubLevel(subLevel.getLevel(),this.getBlockPos().getCenter());
@@ -118,18 +131,18 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
          */
 
         //First, we set the thrust...
-        if(trueElevation < this.getTargetAltitude()-0.25 && this.thrust < 10){
+        if(this.isPowered() && trueElevation < this.getTargetAltitude()-0.25 && this.thrust < 5){
             this.thrust += 0.025F;
-        }else if(trueElevation > this.getTargetAltitude()+0.25 && this.thrust > 0){
+        }else if((!this.isPowered() || trueElevation > this.getTargetAltitude()+0.25) && this.thrust > 0){
             this.thrust -= 0.025F;
         }else if(trueElevation >= this.getTargetAltitude()-0.25 && trueElevation <= this.getTargetAltitude()+0.25){
             //this.thrust = 0;
         }
 
         //...and then we apply it, based on whether the craft has reached the target.
-        if(trueElevation > this.getTargetAltitude()-0.25 && trueElevation < this.getTargetAltitude()+0.25){
+        if(this.isPowered() && trueElevation > this.getTargetAltitude()-0.25 && trueElevation < this.getTargetAltitude()+0.25){
             subLevel.getOrCreateQueuedForceGroup(ForceGroups.GRAVITY.get()).reset();
-            
+            Sable.HELPER.getVelocity(subLevel.getLevel(),subLevel.logicalPose().position());
             handle.addLinearAndAngularVelocity(
                     JOMLConversion.toJOML(new Vec3(0,subLevel.latestLinearVelocity.y*-1,0)),
                     JOMLConversion.toJOML(new Vec3(0,0,0))
@@ -149,17 +162,17 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
     //NBT
     @Override
     protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.saveAdditional(nbt, registryLookup);
         nbt.putFloat("Thrust", thrust);
         nbt.putFloat("BurningCounter",counter);
-        ContainerHelper.loadAllItems(nbt, this.inventory, registryLookup);
-        super.saveAdditional(nbt, registryLookup);
+        ContainerHelper.saveAllItems(nbt, this.VBEinventory, registryLookup);
     }
     @Override
     protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         super.loadAdditional(nbt, registryLookup);
         thrust = nbt.getFloat("Thrust");
         counter = nbt.getFloat("BurningCounter");
-        ContainerHelper.saveAllItems(nbt, this.inventory, registryLookup);
+        ContainerHelper.loadAllItems(nbt, this.VBEinventory, registryLookup);
 
     }
 
@@ -170,18 +183,27 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
 
 
     public NonNullList<ItemStack> getInventory() {
-        return inventory;
+        return this.VBEinventory;
+    }
+
+    public NonNullList<Item> getDestackedInventory(){
+        NonNullList<Item> returnables = NonNullList.createWithCapacity(18);
+        for(ItemStack item : this.getInventory()){
+            returnables.add(item.getItem());
+        }
+        return returnables;
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable(getBlockState().getBlock().getDescriptionId());
+        return Component.translatable(this.getBlockState().getBlock().getDescriptionId());
     }
 
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
         return new FuelAccessHandler(i,inventory,this);
+
     }
 
     @Override
@@ -192,7 +214,7 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
     @Override
     public boolean isEmpty() {
         for (int i = 0; i < getContainerSize(); i++) {
-            ItemStack s = getItem(i);
+            ItemStack s = this.getItem(i);
             if (!s.isEmpty()) {
                 return false;
             }
@@ -202,29 +224,30 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
 
     @Override
     public ItemStack getItem(int i) {
-        return getInventory().get(i);
+        return this.getInventory().get(i);
     }
 
     @Override
     public ItemStack removeItem(int i, int j) {
-        ItemStack r = ContainerHelper.removeItem(getInventory(), i, j);
+        ItemStack r = ContainerHelper.removeItem(this.getInventory(), i, j);
         if (!r.isEmpty()) {
-            setChanged();
+            this.setChanged();
         }
         return r;
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int i) {
-        return ContainerHelper.takeItem(getInventory(), i);
+        return ContainerHelper.takeItem(this.getInventory(), i);
     }
 
     @Override
     public void setItem(int i, ItemStack s) {
-        getInventory().set(i, s);
+        this.getInventory().set(i, s);
         if (s.getCount() > s.getMaxStackSize()) {
             s.setCount(s.getMaxStackSize());
         }
+        this.setChanged();
     }
 
     @Override
@@ -234,21 +257,8 @@ public class VerticalBoosterBlockEntity extends BlockEntity implements BlockEnti
 
     @Override
     public void clearContent() {
-        getInventory().clear();
+        this.getInventory().clear();
+        this.setChanged();
     }
 
-    @Override
-    public int[] getSlotsForFace(Direction direction) {
-        return IntStream.of(getInventory().size()).toArray();
-    }
-
-    @Override
-    public boolean canPlaceItemThroughFace(int i, ItemStack itemStack, @Nullable Direction direction) {
-        return direction != Direction.UP;
-    }
-
-    @Override
-    public boolean canTakeItemThroughFace(int i, ItemStack itemStack, Direction direction) {
-        return false;
-    }
 }

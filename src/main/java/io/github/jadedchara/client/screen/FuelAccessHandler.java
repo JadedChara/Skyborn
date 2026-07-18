@@ -18,10 +18,10 @@ public class FuelAccessHandler extends AbstractContainerMenu {
         super(Skyborn.FUEL_ACCESS_HANDLER, syncId);
         checkContainerSize(inventory, 18);
         this.inventory = inventory;
+
         // some inventories do custom logic when a player opens it.
         inventory.startOpen(pl.player);
 
-        // This will place the slot in the correct locations for a 3x3 Grid. The slots exist on both server and client!
         int m;
         int l;
         // Our inventory
@@ -63,6 +63,7 @@ public class FuelAccessHandler extends AbstractContainerMenu {
                 slot.setChanged();
             }
         }
+        this.inventory.setChanged();
 
         return newStack;
     }

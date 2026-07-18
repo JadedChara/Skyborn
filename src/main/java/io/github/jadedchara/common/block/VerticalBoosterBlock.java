@@ -80,7 +80,7 @@ public class VerticalBoosterBlock extends BaseEntityBlock {
             BlockEntity be = l.getBlockEntity(bp);
             if (be instanceof VerticalBoosterBlockEntity vbe) {
 
-                Containers.dropContents(l, bp, (Container) vbe);
+                Containers.dropContents(l, bp, vbe);
                 l.updateNeighborsAt(bp, this);
             }
             super.onRemove(bs, l, bp, bs2, bl);
